@@ -108,7 +108,7 @@ echo "=== 3. select protocols: ${PROTOCOLS:-EL} ==="
 awk -F'\t' -v want="${PROTOCOLS:-EL}" 'BEGIN{OFS="\t"; n=split(want,a," "); for(i=1;i<=n;i++) keep[a[i]]=1}
      NR==1{print;next} {$7=($3 in keep ? "yes" : "no"); print}' \
     config/samples.full.tsv > config/samples.tsv
-awk -F'\t' 'NR==1||$7=="yes"' config/samples.tsv | column -t -s$'\t'
+awk -F"	" 'NR==1||$7=="yes"' config/samples.tsv | { command -v column >/dev/null 2>&1 && column -t -s"$(printf "	")" || cat; }
 
 echo "=== 4. manifest ==="
 sed -i 's/\r$//' scripts/*.sh scripts/*.lsf config/params.sh run_all.sh 2>/dev/null || true

@@ -1,0 +1,8 @@
+protocol	call_grp	n	pct
+D_long	no database match	210	84.3
+D_long	assay artifact (binds IgG)	22	8.8
+D_long	bacterial, not viral	10	4
+D_long	viral epitope	7	2.8
+Sergio2	no database match	15	68.2
+Sergio2	viral epitope	6	27.3
+Sergio2	viral epitope (weak)	1	4.5

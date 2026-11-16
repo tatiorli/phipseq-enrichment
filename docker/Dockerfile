@@ -23,8 +23,10 @@ LABEL org.opencontainers.image.title="phip-pipeline" \
 
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl ca-certificates procps gzip less \
+        curl ca-certificates procps gzip less bsdmainutils \
     && rm -rf /var/lib/apt/lists/*
+# bsdmainutils provides `column`. The scripts no longer depend on it, but
+# the manifest is far easier to read when it is there.
 USER $MAMBA_USER
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER env-py.yaml env-r.yaml /tmp/
@@ -38,9 +40,16 @@ ENV PY_BIN=/opt/conda/envs/phip/bin \
     HOME=/tmp
 
 # Fail the BUILD if anything is missing, rather than three hours into a run.
+# On a miss, print what the solver actually chose -- "MISSING streme" alone
+# does not say whether the package is absent or just an old version without
+# that binary. streme ships with MEME >= 5.3, which is why env-py.yaml pins it.
 RUN set -eux; \
+    echo "--- MEME package as resolved ---"; \
+    micromamba list -n phip 2>/dev/null | grep -iE '^\s*(meme|perl)\b' || true; \
+    echo "--- meme binaries present ---"; \
+    ls "$PY_BIN" | grep -iE 'meme|streme|dreme|fimo' || echo "(none)"; \
     for t in python3 fastp seqkit bowtie2 samtools pigz streme mafft; do \
-      test -x "$PY_BIN/$t" || { echo "MISSING $t in phip"; exit 1; }; \
+      test -x "$PY_BIN/$t" || { echo "MISSING $t in phip"; ls "$PY_BIN" | head -60; exit 1; }; \
     done; \
     test -x "$R_BIN/Rscript" || { echo "MISSING Rscript in phip-r"; exit 1; }; \
     "$PY_BIN/python3" -c "import pandas, pyarrow, Bio; print('python ok')"; \

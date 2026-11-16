@@ -2,7 +2,7 @@
 
 Source: <https://hpcwiki.weizmann.ac.il/en/home/lsf/container>
 
-You cannot build containers on the Wexac compute or login nodes — building
+You cannot build containers on the Wexac compute or login nodes, building
 needs root. Weizmann solves this with a **dedicated build server**:
 
 ```
@@ -14,7 +14,7 @@ push to the internal registry or copy a `.sif` to your home.
 
 ---
 
-## Route A — Docker via LSF (default, `CONTAINER_MODE=docker-lsf`)
+## Route A, Docker via LSF (default, `CONTAINER_MODE=docker-lsf`)
 
 LSF launches the whole job inside the image using its `docker-cpu` application
 profile. Nothing to convert, nothing to copy.
@@ -31,7 +31,7 @@ docker push ops:5000/phip-pipeline:0.1
 
 Check it landed: `ops_repositories`
 
-**2. Run from a Wexac access node** — this is what `run_all.sh` does:
+**2. Run from a Wexac access node**, this is what `run_all.sh` does:
 
 ```bash
 bsub -q short -app docker-cpu -env LSB_CONTAINER_IMAGE=ops:5000/phip-pipeline:0.1 \
@@ -45,7 +45,7 @@ bsub -q interactive -app docker-cpu-interactive \
      -env LSB_CONTAINER_IMAGE=ops:5000/phip-pipeline:0.1 -Is /bin/bash
 ```
 
-Confirm you really are inside the image — `/.dockerenv` exists only in a
+Confirm you really are inside the image, `/.dockerenv` exists only in a
 container:
 
 ```bash
@@ -61,7 +61,7 @@ IMAGE="ops:5000/phip-pipeline:0.1"
 
 ---
 
-## Route B — Singularity `.sif` (`CONTAINER_MODE=singularity`)
+## Route B, Singularity `.sif` (`CONTAINER_MODE=singularity`)
 
 One portable file, no registry. Also what you want if you ever need
 `--fakeroot` to edit the image.
@@ -94,7 +94,7 @@ BIND_PATHS="/home/labs/yourlab:/home/labs/yourlab"
 
 ---
 
-## Route C — no build server access
+## Route C, no build server access
 
 Push the image to Docker Hub from your own machine and let LSF or Singularity
 pull it straight from there:

@@ -1,0 +1,47 @@
+VirScan Vir3 library annotation of the enriched peptides
+scripts/08_annotate_vir3.py, LSF job 937772, cn364, 2026-11-16
+Library: vir3_annotations.csv.gz, Zenodo 10.5281/zenodo.20033894 (CC BY 4.0)
+
+indexing vir3_annotations.csv.gz ...
+  128,257 tiles, 2,295,857 distinct 16-mers
+reading enrichment table ...
+  508,311 features
+
+=== enriched peptides that are genuine library members ===
+protocol  enriched  exact  one_mismatch  absent  pct_library
+      DL       251    112            45      94         62.5
+      S2        22      9             0      13         40.9
+
+=== species of the enriched library members ===
+
+DL:
+    22  Streptococcus sp. group G
+    21  Streptococcus pneumoniae
+    16  Rhinovirus A
+    12  Human herpesvirus 5
+    10  Human herpesvirus 3
+     7  Human herpesvirus 6A
+     5  Human respiratory syncytial virus
+     3  deleted (mostly T. cruzi)
+
+S2:
+     5  Rhinovirus A
+     1  Alphapapillomavirus 10
+     1  Hepatitis B virus
+     1  Betapapillomavirus 1
+     1  Cosavirus A
+
+45 enriched peptides match a library tile with ONE substitution: sequencing or
+PCR error variants of a real member, which de novo counting split off as
+separate features.
+
+107 match nothing even allowing one substitution. Those cannot be antigen hits
+whatever their fold change.
+
+highest fold change among them:
+protocol          peptide  logFC
+      DL DNAELRPRAGRYTTDD 11.593
+      S2 IQSGVMPTLFRSLQSG 11.268
+      DL QTAVIYTMWPKQTEAN 10.786
+      DL FPYKLPTYLPWVSLTE 10.693
+      DL NGYVKIDSEWQDFKRR 10.650

@@ -1,0 +1,22 @@
+# Identity of the enriched peptide families, PRJNA1438256 reanalysis.
+# blastp, short-query parameters (word size 2, PAM30, no composition adjustment),
+# against UniProtKB/Swiss-Prot (RID FNMV906Z016) and nr (RID FNMUSCJ7016).
+# Queries are 16 aa, the translated 50 bp insert; families are near-identical
+# variant groups collapsed to one representative.
+family	peptide	log2FC	n_in_family	best_hit	organism	identity	evalue	class
+DL_fam1	SNVAVARSQGRYTTND	12.1	6	pneumococcal histidine triad protein PhtE	Streptococcus pneumoniae	100% / 16	6e-06	BACTERIAL - not viral
+DL_fam2	KTDKYKLILNGKTLKG	12.0	19	Immunoglobulin G-binding protein G / albumin-binding GA domain	Streptococcus sp. group G, S. dysgalactiae	94-100% / 16	8e-08	ASSAY ARTIFACT - binds IgG
+DL_fam3	TQPSKPTTKQRQNKPP	11.2	-	Major surface glycoprotein G	Human respiratory syncytial virus A2	100% / 16	6e-10	viral epitope
+DL_fam4	ERAVEVDPDDVNKSTL	10.9	-	Nucleoprotein	Puumala virus / hantavirus	100% / 16	1e-09	viral epitope
+DL_fam5	QTAVIYTMWPKQTEAN	10.8	-	Polyprotein P1234 (nsP)	O'nyong-nyong / Chikungunya virus	80% / 20	2e-09	viral epitope
+DL_fam6	RDTDLHIQSGPIEQNH	10.8	-	Genome polyprotein	Rhinovirus A1B	100% / 15	3e-09	viral epitope
+DL_fam7	RRRVGGFETDTKRYDK	10.8	-	Polyprotein P1234 (nsP)	Eastern equine encephalitis / Madariaga virus	100% / 16	3e-10	viral epitope
+DL_fam8	FPYKLPTYLPWVSLTE	10.7	-	none	-	-	>2	UNASSIGNED
+S2_fam1	IQSGVMPTLFRSLQSG	11.3	13	none	-	-	>8	UNASSIGNED - 13 of 22 S2 hits
+S2_fam2	ETGPRVHVPRISKLKR	10.2	-	Genome polyprotein	Cosavirus A	94% / 16	3e-08	viral epitope
+S2_fam3	DDVTDPCWIYMDTYLR	10.2	-	Replication protein E1	Human papillomavirus 5	100% / 16	1e-12	viral epitope
+S2_fam4	PLAVTWNPNAFHQALL	10.1	-	Large S / envelope protein	Hepatitis B virus	100% / 16	4e-07	viral epitope
+S2_fam5	NIRATLLGKFKDCYGL	5.9	-	Replication protein E1	Human papillomavirus 44 / 55	100% / 16	4e-10	viral epitope
+S2_fam6	TPNTAEMLCFVSGCKD	5.5	-	Genome polyprotein	Rhinovirus A16 / A81	100% / 16	1e-10	viral epitope
+S2_fam7	NPIENYVDEVLNEVLV	3.3	-	Genome polyprotein	Rhinovirus A1B / A39	88% / 16	7e-09	viral epitope
+S2_fam8	TDMHVQNVPITQNPVE	2.6	-	Genome polyprotein	Rhinovirus A1B / A56	69% / 16	9e-04	viral epitope (weak)

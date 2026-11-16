@@ -1,2 +1,5 @@
-protocol	tested	enriched_edger	enriched_paper	only_edger	only_paper	median_logFC	max_logFC
-EL	83571	0	622	0	1	NA	-Inf
+protocol	tested	n_edger	n_paper	n_only_edger	n_only_paper	n_both	median_logFC	max_logFC	min_FDR
+DL	177562	251	5690	0	5439	251	4.63	12.1	1.1599999999999998e-75
+DLPW	128919	0	23278	0	23278	0	NA	NA	0.0583
+EL	83571	0	622	0	622	0	NA	NA	4.52e-6
+S2	118259	22	11236	0	11214	22	5.63	11.27	1.5099999999999995e-152

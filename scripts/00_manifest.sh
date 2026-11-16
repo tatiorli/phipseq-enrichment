@@ -40,7 +40,14 @@ echo "Manifest: $OUT"
 echo "  runs to download : $N"
 echo "  total size       : ${TOTAL} GB"
 echo
-column -t -s$'\t' "$OUT" | cut -c1-120
+# Pretty-print if `column` exists. It is in util-linux, which slim container
+# images routinely omit -- and under `set -e` a missing formatter would kill
+# the whole run over a cosmetic line. Never let display code be load-bearing.
+if command -v column >/dev/null 2>&1; then
+  column -t -s$'\t' "$OUT" | cut -c1-120
+else
+  cut -c1-120 "$OUT"
+fi
 
 if [ "$N" -eq 0 ]; then
   echo "ERROR: no runs matched. Check config/samples.tsv." >&2

@@ -17,6 +17,6 @@ dependencies:
   - bowtie2
   - samtools
   - pigz
-  - meme
+  - meme>=5.5          # streme ships with MEME >= 5.3; unpinned can resolve older
   - mafft
   - cd-hit

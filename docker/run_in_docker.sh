@@ -23,6 +23,13 @@ use_r  () { export PATH="$R_BIN:$BASE_PATH"; }
 
 export PROJECT="$PWD"
 export CONTAINER_MODE="none"     # we ARE the container; do not nest
+
+# The per-sample stages are LSF job scripts: they start with `cd "$LS_SUBCWD"`,
+# the submission directory LSF exports into every job. Outside LSF that
+# variable does not exist, and `set -u` turns it into a fatal error. Provide
+# it here so the same scripts run unmodified under LSF and under Docker.
+export LS_SUBCWD="$PWD"
+
 mkdir -p logs fastq counts results
 
 echo ">>> phip-pipeline $(date -u +%FT%TZ)"

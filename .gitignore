@@ -8,18 +8,16 @@ ref/*.bt2
 *.tar
 *.tgz
 
-# Large or regenerable outputs
+# Large or regenerable outputs: the full count matrix and the per-feature
+# statistics table. Everything else under results/ is committed on purpose,
+# so a reader can see what the pipeline produced without running it:
+#   enrichment_summary.tsv, enriched_peptides.tsv, library_qc.tsv
+#   blast_annotation.tsv, blast/ (raw BLAST reports, ~1.6 MB)
+#   motifs/ (STREME input and output, ~1.2 MB)
+#   figures/
 results/*.parquet
 results/counts_matrix.tsv.gz
 results/enrichment_all.tsv.gz
-results/motifs/
-
-# Keep the small result tables and the figure — a reader should see the
-# output without running anything:
-!results/enrichment_summary.tsv
-!results/enriched_peptides.tsv
-!results/library_qc.tsv
-!results/figures/
 
 # Logs and scratch
 logs/
@@ -34,3 +32,10 @@ config/manifest.tsv
 
 # The job-application email is private; keep it out of the public repo
 EMAIL_DRAFT.md
+
+# VirScan library reference — 65 MB download, not ours to redistribute.
+# scripts/08_annotate_vir3.py prints the command to fetch it.
+data.tar.gz
+data/
+vir3_annotations.csv.gz
+dataset.phip
