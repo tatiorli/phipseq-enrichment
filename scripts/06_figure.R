@@ -55,8 +55,8 @@ pA <- ggplot(cnt, aes(protocol, n, fill = method)) +
   scale_x_discrete(labels = relabel) +
   scale_y_continuous(labels = comma, expand = expansion(mult = c(0, .18))) +
   scale_fill_manual(values = c(edgeR = "#2B5D8C", `threshold rule` = "#BDBDBD")) +
-  labs(title = "A  Peptides called enriched over the matched bead control",
-       subtitle = sprintf("edgeR: FDR < %s and log2FC > %s   |   threshold rule: FC >= 2 and CPM >= 10",
+  labs(title = "A  Peptides called enriched",
+       subtitle = sprintf("vs matched bead control\nedgeR: FDR < %s, log2FC > %s\nthreshold rule: FC >= 2, CPM >= 10",
                           Sys.getenv("FDR_CUTOFF", "0.05"), Sys.getenv("LOGFC_CUTOFF", "1")),
        x = NULL, y = "peptides", fill = NULL) +
   theme_minimal(base_size = 11) +
@@ -68,8 +68,9 @@ pB <- ggplot(hits, aes(protocol, logFC, fill = protocol)) +
   geom_boxplot(width = .13, outlier.shape = NA, fill = "white", colour = "grey25") +
   scale_x_discrete(labels = relabel) +
   scale_fill_manual(values = pal, guide = "none") +
-  labs(title = "B  How strongly they were enriched",
-       x = NULL, y = expression(log[2]~"fold change vs bead control")) +
+  labs(title = "B  Enrichment strength",
+       subtitle = "edgeR hits only",
+       x = NULL, y = expression(log[2]~"fold change")) +
   theme_minimal(base_size = 11) +
   theme(panel.grid.major.x = element_blank())
 
