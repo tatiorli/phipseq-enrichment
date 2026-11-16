@@ -41,7 +41,7 @@ It downloads its own data from ENA, so a clean clone reproduces every figure
 and table here. `PROTOCOLS="EL"` is a 4-run, ~0.35 GB smoke test;
 `"EL S2 DL DLPW"` is the full 16-run comparison (~4.6 GB).
 
-Build locally instead, or run it on an LSF cluster, see
+Build locally instead, or run it on a cluster, see
 [Running it elsewhere](#running-it-elsewhere).
 
 ---
