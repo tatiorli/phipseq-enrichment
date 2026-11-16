@@ -220,6 +220,22 @@ mapping, joined to run accessions.
 | `DLPW` | `D_long_*_PW` | `DL3_P1_PW_1/2` | `DL1_BC_PW_1/2` |
 | `RD` | `round1`/`round3` | `r3_P1_1/2` | `r1_BC_1/2` |
 
+
+Notes on the samples naming and mapping to the experiments reported in the article: 
+The paper names its five protocols differently (Original, Phage-Ab Optimized, Multi-IP, Multi-IP + Pre-wash, Optimized) and never links the two sets.
+
+Certain:
+_PW means	pre-wash
+round1 / round3	means which round of immunoprecipitation
+_BC	is bead control
+_P1 means	patient 1 serum
+
+And this is inferred, not stated anywhere:
+Elledge_long is almost certainly the original published VirScan protocol. Stephen Elledge’s lab created VirScan (Xu et al. 2015), so “Elledge” is the method’s origin, and “long” is probably the overnight incubation. And it fits the data: Elledge_long returned 0 enriched peptides at any cutoff, which is exactly what the paper says the original protocol did on healthy control serum.
+D_long likely Devdoot (Majumdar, the corresponding author), his long protocol. Its serum arm is round 3 against a round 1 bead control, so it involves multiple IP rounds, consistent with “Multi-IP”.
+D_long_PW the same, plus pre-wash, so “Multi-IP + Pre-wash”.
+Sergio2 someone’s name, second version. No idea which paper protocol it is.
+
 ### `RD` is excluded by default
 
 `EL`, `S2`, `DL`, `DLPW` were sequenced at **50 bp**; `RD` at **151 bp**.
