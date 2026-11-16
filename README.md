@@ -137,8 +137,7 @@ change. Two of them are in the top five by fold change in the whole experiment,
 including `IQSGVMPTLFRSLQSG`, the family carrying 13 of Sergio2's 22 hits.
 
 The 45 single-substitution matches are error variants of real members that de
-novo counting split off as separate features. That is the cost of not using the
-library reference, measured rather than assumed.
+novo counting split off as separate features. 
 
 Species of the confirmed members:
 
@@ -177,8 +176,7 @@ amino-acid composition is controlled for.
 The shared `GPI…QNP` core is not a coincidence, BLAST places both inside the
 **rhinovirus A genome polyprotein**. Two protocols, analysed independently,
 recovered the same epitope region. That is a stronger argument for a real
-binder than any single ranked list, and it fell out of the motif analysis
-without rhinovirus ever being mentioned to it.
+binder than any single ranked list.
 
 ---
 
@@ -197,17 +195,13 @@ without rhinovirus ever being mentioned to it.
 | 8 | `scripts/08_annotate_vir3.py` | exact match against the VirScan library |
 | 9 | `scripts/09_vir3_figure.R` | library vs BLAST comparison figure |
 
-Every stage is idempotent, rerun after any failure and finished work is
-skipped. The same scripts run unmodified under Docker and under LSF.
-
----
 
 ## Design decisions
 
 ### The sample-to-condition mapping is not in the paper
 
 It is not in ENA's run report either; both come back empty. It is in the NCBI
-**BioSample** attributes:
+**BioSample** attributes, manually checked:
 
 ```bash
 curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=biosample&id=$(seq -s, 56533536 56533583)&rettype=full&retmode=xml"
@@ -258,7 +252,7 @@ rerunning anything.
 
 ## Reproducibility
 
-Run on an LSF cluster and run in Docker on a different machine, with
+Run on a server cluster and run in Docker on a different machine, with
 independently solved software environments, the pipeline returns the same
 numbers to the digit: 94,760 features kept of 133,643, 83,571 tested, 0 enriched
 by edgeR against 622 by the threshold rule, BCV 0.245, minimum FDR 4.5×10⁻⁶.
@@ -279,11 +273,11 @@ by edgeR against 622 by the threshold rule, BCV 0.245, minimum FDR 4.5×10⁻⁶
 4. **BLAST identification is per-family, from a 16-aa translation.** The raw
    reports are in `results/blast/` so every call can be checked.
 5. 16 of the 48 BioSamples list a `.count.csv.gz` as source rather than a
-   FASTQ. ENA reports non-zero read counts for all, but verify before use.
-
+   FASTQ.
+   
 ### Getting the VirScan library
 
-The library is public, just not with this BioProject:
+The library is public, just not with this BioProject (is a previously published and curate dabatase):
 
 - **`vir3_annotations.csv.gz`**, VirScan3 peptide annotations, inside
   `data.tar.gz` at [Zenodo 10.5281/zenodo.20033894](https://doi.org/10.5281/zenodo.20033894)
@@ -296,7 +290,7 @@ The library is public, just not with this BioProject:
   [`athchen/ktsp_paper`](https://github.com/athchen/ktsp_paper) (`data_raw/hiv_data.rda`).
 
 With any of these, set `COUNT_MODE=reference` and `REF_FASTA`, and every
-peptide gets a name instead of a BLAST inference.
+peptide gets a name from the db instead of a BLAST inference.
 
 ---
 
@@ -304,7 +298,7 @@ peptide gets a name instead of a BLAST inference.
 
 ```bash
 bash scripts/00_smoke_test.sh   # verifies container, filesystem, tools, parsing
-bash run_all.sh                 # submits the LSF dependency chain
+bash run_all.sh                 # submits the server dependency chain
 ```
 
 `config/params.sh` holds queue names, per-stage memory and `CONTAINER_MODE`
