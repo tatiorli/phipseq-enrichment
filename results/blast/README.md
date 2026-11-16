@@ -24,7 +24,7 @@ turn out to be exact matches to respiratory syncytial virus and rhinovirus.
 Short peptides are the classic case where the default cutoff hides the answer.
 
 **Reading them.** Ignore the E-value ranking in isolation; look at alignment
-length and percent identity (you want 14–16/16), then at the organism. The
+length and percent identity, then at the organism. The
 calls made from these reports are in `../blast_annotation.tsv`, including the
 two families that match nothing in either database and the streptococcal
 IgG-binding protein that is an assay artifact rather than an epitope.
