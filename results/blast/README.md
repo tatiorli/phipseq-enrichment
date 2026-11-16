@@ -29,5 +29,3 @@ calls made from these reports are in `../blast_annotation.tsv`, including the
 two families that match nothing in either database and the streptococcal
 IgG-binding protein that is an assay artifact rather than an epitope.
 
-RIDs expire about 24 h after the search, so these files are the only surviving
-copy of the searches.
