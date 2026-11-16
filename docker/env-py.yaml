@@ -1,0 +1,22 @@
+# Read processing + python + MEME.
+# MEME 5.5.5 pins icu 72.x; R 4.3 wants icu 73/75/78. They cannot share one
+# env, so they get two. Nothing here needs R and nothing in env-r.yaml needs
+# MEME, so splitting costs nothing.
+name: phip
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - pandas
+  - pyarrow
+  - numpy
+  - biopython
+  - fastp
+  - seqkit
+  - bowtie2
+  - samtools
+  - pigz
+  - meme
+  - mafft
+  - cd-hit

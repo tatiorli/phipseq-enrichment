@@ -1,0 +1,36 @@
+# Data — never commit. The FASTQs alone are ~4.6 GB and GitHub rejects >100 MB
+# files. The pipeline downloads them from ENA, which is the point.
+fastq/
+counts/
+ref/*.fasta
+ref/*.bt2
+*.sif
+*.tar
+*.tgz
+
+# Large or regenerable outputs
+results/*.parquet
+results/counts_matrix.tsv.gz
+results/enrichment_all.tsv.gz
+results/motifs/
+
+# Keep the small result tables and the figure — a reader should see the
+# output without running anything:
+!results/enrichment_summary.tsv
+!results/enriched_peptides.tsv
+!results/library_qc.tsv
+!results/figures/
+
+# Logs and scratch
+logs/
+probe.txt
+quickstart.lsf
+config/ena_raw.tsv
+config/manifest.tsv
+
+# Local secrets — belt and braces, nothing here should ever hold one
+.env
+*.token
+
+# The job-application email is private; keep it out of the public repo
+EMAIL_DRAFT.md

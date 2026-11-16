@@ -1,0 +1,21 @@
+# R + edgeR + plotting. Kept apart from MEME because of the icu pin clash.
+# Versions deliberately loose: let the solver pick a consistent icu/r-base set.
+# Pin them again once it resolves, with `conda env export`.
+name: phip-r
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base>=4.3,<4.5
+  - r-data.table
+  - r-r.utils
+  - r-ggplot2
+  - r-ggseqlogo
+  - r-patchwork
+  - r-dplyr
+  - r-readr
+  - r-tidyr
+  - r-scales
+  - r-pheatmap
+  - bioconductor-edger
+  - bioconductor-universalmotif

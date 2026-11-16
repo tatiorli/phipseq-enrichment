@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+#BSUB -J phip_dl[1-16]
+#BSUB -o logs/dl.%J.%I.out
+#BSUB -e logs/dl.%J.%I.err
+#BSUB -R rusage[mem=4000]
+#BSUB -R span[hosts=1]
+#BSUB -n 1
+#BSUB -W 4:00
+# ---------------------------------------------------------------------------
+# LSF job array: one run per array index.
+#
+#   bsub -q <queue> < scripts/01_download.lsf
+#
+# The array range above must match the number of include=yes runs (16 by
+# default; 20 if you enable the RD arm). run_all.sh rewrites it for you.
+#
+# Checkpointing: a run with a matching .done marker is skipped, so resubmitting
+# after a failure costs nothing. md5 is verified against ENA.
+# ---------------------------------------------------------------------------
+set -euo pipefail
+cd "$LS_SUBCWD"
+source config/params.sh
+
+MANIFEST="$PROJECT/config/manifest.tsv"
+[ -f "$MANIFEST" ] || { echo "Run scripts/00_manifest.sh first" >&2; exit 1; }
+
+i=${LSB_JOBINDEX:-1}
+line=$(awk -F'\t' -v n="$i" 'NR==n+1' "$MANIFEST")
+[ -n "$line" ] || { echo "No manifest row $i"; exit 0; }
+
+run=$(cut -f1 <<<"$line")
+name=$(cut -f2 <<<"$line")
+url=$(cut -f9 <<<"$line")
+dest="$FASTQ_DIR/${name}.fastq.gz"
+marker="$FASTQ_DIR/${name}.done"
+
+if [ -f "$marker" ]; then
+  echo "[$name] already complete, skipping"
+  exit 0
+fi
+
+# ENA can list several files separated by ';' - these runs are single-end,
+# so take the first and fail loudly if there is more than one.
+if [[ "$url" == *";"* ]]; then
+  echo "[$name] WARNING: multiple files listed, expected single-end: $url"
+  url=${url%%;*}
+fi
+
+echo "[$name] downloading $run from ${url}"
+curl -sf --retry 5 --retry-delay 10 --retry-all-errors \
+     -o "${dest}.part" "https://${url#ftp://}"
+
+mv "${dest}.part" "$dest"
+
+# Integrity: gzip must be intact and the record count must be a multiple of 4.
+pigz -t "$dest" 2>/dev/null || gzip -t "$dest"
+nlines=$(pigz -dc "$dest" 2>/dev/null | wc -l || zcat "$dest" | wc -l)
+if (( nlines % 4 != 0 )); then
+  echo "[$name] ERROR: truncated FASTQ ($nlines lines)" >&2
+  rm -f "$dest"; exit 1
+fi
+
+echo -e "run\t$run\nsample\t$name\nreads\t$((nlines/4))\nbytes\t$(stat -c%s "$dest")" > "$marker"
+echo "[$name] done: $((nlines/4)) reads"

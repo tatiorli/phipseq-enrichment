@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+#BSUB -J phip_count[1-16]
+#BSUB -o logs/count.%J.%I.out
+#BSUB -e logs/count.%J.%I.err
+#BSUB -R rusage[mem=16000]
+#BSUB -R span[hosts=1]
+#BSUB -n 8
+#BSUB -W 6:00
+# ---------------------------------------------------------------------------
+# Trim, truncate to a common length, and count inserts. One run per index.
+#
+#   bsub -q <queue> < scripts/02_count.lsf
+#
+# Two modes, set by COUNT_MODE in config/params.sh:
+#
+#   denovo    - count exact unique inserts. No reference needed, so this runs
+#               today. You lose virus/epitope annotation until you map or
+#               BLAST the enriched sequences later.
+#   reference - bowtie2 against a VirScan peptide-oligo FASTA. Use this once
+#               you have the library definition (see README).
+#
+# TRUNCATION IS NOT COSMETIC. The EL/S2/DL/DLPW arms were sequenced at 50 bp
+# and the RD arm at 151 bp. Counting exact sequences of different lengths
+# across arms produces disjoint sets and a meaningless comparison. Everything
+# is cut to TRUNC_LEN before counting.
+# ---------------------------------------------------------------------------
+set -euo pipefail
+cd "$LS_SUBCWD"
+source config/params.sh
+
+i=${LSB_JOBINDEX:-1}
+line=$(awk -F'\t' -v n="$i" 'NR==n+1' "$PROJECT/config/manifest.tsv")
+[ -n "$line" ] || { echo "No manifest row $i"; exit 0; }
+name=$(cut -f2 <<<"$line")
+
+fq="$FASTQ_DIR/${name}.fastq.gz"
+out="$COUNT_DIR/${name}.counts.tsv.gz"
+marker="$COUNT_DIR/${name}.done"
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/phip.${name}.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+[ -f "$marker" ] && { echo "[$name] already counted, skipping"; exit 0; }
+[ -f "$fq" ]     || { echo "[$name] missing FASTQ - run 01_download first" >&2; exit 1; }
+
+echo "[$name] fastp"
+FASTP_ADAPTER=()
+[ -n "${ADAPTER_3P}" ] && FASTP_ADAPTER=(--adapter_sequence "$ADAPTER_3P")
+
+run_tool fastp \
+  -i "$fq" -o "$tmp/trimmed.fastq.gz" \
+  "${FASTP_ADAPTER[@]}" \
+  --max_len1 "$TRUNC_LEN" \
+  --length_required "$TRUNC_LEN" \
+  --qualified_quality_phred 20 \
+  --unqualified_percent_limit 20 \
+  --n_base_limit 0 \
+  --thread "$THREADS" \
+  --json "$COUNT_DIR/${name}.fastp.json" \
+  --html "$COUNT_DIR/${name}.fastp.html"
+
+if [ "$COUNT_MODE" = "denovo" ]; then
+  echo "[$name] counting unique ${TRUNC_LEN}bp inserts"
+  # seq<TAB>count, sorted descending, filtered at MIN_COUNT to keep the file small
+  #
+  # Pull the sequence line straight out of the FASTQ (record = 4 lines, the
+  # sequence is line 2). Do NOT use `seqkit fx2tab -n -s`: in this seqkit
+  # version -n is --name and -s is --seq-hash, so that emitted MD5 HASHES of
+  # the sequences, not the sequences. Counting still worked -- identical
+  # sequences hash identically -- but the feature ids were unusable
+  # downstream, because you cannot translate a hash into a peptide.
+  pigz -dc "$tmp/trimmed.fastq.gz" \
+    | awk 'NR%4==2' \
+    | LC_ALL=C sort -S 4G --parallel="$THREADS" -T "$tmp" \
+    | LC_ALL=C uniq -c \
+    | awk -v m="$MIN_COUNT" '$1>=m {print $2"\t"$1}' \
+    | LC_ALL=C sort -k2,2nr -S 2G -T "$tmp" \
+    | gzip -c > "$out"
+
+elif [ "$COUNT_MODE" = "reference" ]; then
+  [ -f "$REF_FASTA" ] || { echo "[$name] REF_FASTA not found: $REF_FASTA" >&2; exit 1; }
+  idx="$PROJECT/ref/bt2_index"
+  # The index is built once by scripts/00_build_index.sh, before the array is
+  # submitted. Array jobs never build it: 16 concurrent bowtie2-build calls
+  # writing the same files is a guaranteed corrupt index.
+  [ -f "${idx}.1.bt2" ] || {
+    echo "[$name] ERROR: bowtie2 index missing. Run scripts/00_build_index.sh" >&2
+    exit 1
+  }
+  echo "[$name] bowtie2"
+  run_tool bowtie2 -x "$idx" -U "$tmp/trimmed.fastq.gz" \
+      --norc --very-sensitive -k 1 --no-unal \
+      -p "$THREADS" 2> "$COUNT_DIR/${name}.bowtie2.log" \
+    | run_tool samtools view -b -q 10 - \
+    | run_tool samtools sort -@ 4 -o "$tmp/aln.bam" -
+  run_tool samtools index "$tmp/aln.bam"
+  run_tool samtools idxstats "$tmp/aln.bam" \
+    | awk -v m="$MIN_COUNT" '$1!="*" && $3>=m {print $1"\t"$3}' \
+    | LC_ALL=C sort -k2,2nr \
+    | gzip -c > "$out"
+else
+  echo "Unknown COUNT_MODE=$COUNT_MODE" >&2; exit 1
+fi
+
+total=$(pigz -dc "$out" | awk '{s+=$2} END {print s+0}')
+uniq=$(pigz -dc "$out" | wc -l)
+echo -e "sample\t$name\nfeatures\t$uniq\ncounted_reads\t$total" > "$marker"
+echo "[$name] done: $uniq features, $total reads counted"
