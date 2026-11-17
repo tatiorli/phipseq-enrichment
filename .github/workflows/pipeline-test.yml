@@ -1,0 +1,90 @@
+name: end-to-end pipeline test
+
+# Runs the real pipeline, on a clean machine, from nothing but this repository
+# and the public data: the same thing someone cloning this repo would do.
+#
+# Triggers on push and pull request, and can be started by hand from the
+# Actions tab (workflow_dispatch).
+#
+# The EL protocol is used: 4 runs, ~0.35 GB from ENA, well inside the free
+# runner's limits (2 cores, 7 GB RAM, 14 GB disk, 6 h). The full 16-run
+# comparison would also fit but takes far longer to download.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free up disk
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost
+          df -h /
+
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker
+          file: ./docker/Dockerfile
+          push: false
+          load: true
+          tags: phip-pipeline:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run the pipeline on one protocol
+        run: |
+          mkdir -p run && cp -r config scripts docker run/
+          cd run
+          docker run --rm \
+            -u "$(id -u):$(id -g)" \
+            -v "$PWD":/work -w /work \
+            -e PROTOCOLS="EL" \
+            phip-pipeline:ci
+
+      - name: Check the expected outputs exist
+        run: |
+          cd run
+          for f in results/enrichment_summary.tsv \
+                   results/library_qc.tsv \
+                   results/figures/protocol_comparison.pdf; do
+            test -s "$f" || { echo "MISSING or empty: $f"; exit 1; }
+          done
+          echo "--- enrichment summary ---"
+          cat results/enrichment_summary.tsv
+
+      - name: Check the numbers still match the published result
+        run: |
+          cd run
+          # These are the values reported in the README. If a dependency
+          # changes behaviour, this fails loudly instead of quietly drifting.
+          awk -F'\t' 'NR==1{for(i=1;i<=NF;i++)h[$i]=i; next}
+            $h["protocol"]=="EL" {
+              ok=1
+              if ($h["tested"]  != 83571) { print "tested  drifted: "$h["tested"];  ok=0 }
+              if ($h["n_edger"] != 0)     { print "n_edger drifted: "$h["n_edger"]; ok=0 }
+              if ($h["n_paper"] != 622)   { print "n_paper drifted: "$h["n_paper"]; ok=0 }
+              exit ok ? 0 : 1
+            }
+            END { if (!ok) { print "no EL row found"; exit 1 } }
+          ' results/enrichment_summary.tsv
+          echo "numbers match the README"
+
+      - name: Upload the figures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-output
+          path: |
+            run/results/figures/
+            run/results/*.tsv
+          retention-days: 14
