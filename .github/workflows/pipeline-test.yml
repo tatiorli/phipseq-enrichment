@@ -15,11 +15,27 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      protocols:
+        description: "Protocols to run (space separated)"
+        required: true
+        default: "EL"
+        type: choice
+        options:
+          - "EL"
+          - "DL DLPW"
+          - "EL S2 DL DLPW"
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # A GitHub-hosted job is killed at 6 h. The full 16-run comparison
+    # downloads 4.6 GB from ENA, so leave room but stay under the cap.
+    timeout-minutes: 350
+    env:
+      # Pushes and pull requests run the quick one. Only a manual run from the
+      # Actions tab can ask for the full comparison.
+      PROTOCOLS: ${{ github.event.inputs.protocols || 'EL' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -41,15 +57,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run the pipeline on one protocol
+      - name: Run the pipeline
         run: |
+          echo "protocols: $PROTOCOLS"
           mkdir -p run && cp -r config scripts docker run/
           cd run
           docker run --rm \
             -u "$(id -u):$(id -g)" \
             -v "$PWD":/work -w /work \
-            -e PROTOCOLS="EL" \
+            -e PROTOCOLS="$PROTOCOLS" \
             phip-pipeline:ci
+          echo "--- disk after the run ---"
+          df -h /
+          du -sh fastq counts results 2>/dev/null || true
 
       - name: Check the expected outputs exist
         run: |
@@ -65,8 +85,12 @@ jobs:
       - name: Check the numbers still match the published result
         run: |
           cd run
-          # These are the values reported in the README. If a dependency
-          # changes behaviour, this fails loudly instead of quietly drifting.
+          # These are the values reported in the README for the EL protocol.
+          # They are identical whether EL is run alone or alongside the other
+          # three, because each protocol is modelled separately, so this check
+          # is valid for every option in the dropdown.
+          # If a dependency changes behaviour, this fails loudly instead of
+          # quietly drifting. Update them here AND in the README together.
           awk -F'\t' 'NR==1{for(i=1;i<=NF;i++)h[$i]=i; next}
             $h["protocol"]=="EL" {
               ok=1
