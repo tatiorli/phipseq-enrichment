@@ -44,6 +44,8 @@ and table here. `PROTOCOLS="EL"` is a 4-run, ~0.35 GB smoke test;
 Build locally instead, or run it on a cluster, see
 [Running it elsewhere](#running-it-elsewhere).
 
+![pipeline test](https://github.com/tatiorli/phipseq-enrichment/actions/workflows/pipeline-test.yml/badge.svg)
+
 ---
 
 ## Result 1, the two methods rank the protocols in opposite orders
